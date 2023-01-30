@@ -14,11 +14,10 @@ namespace SalesWebMVC.Services
 
         }
 
-        public ICollection<Department> FindAll()
+        public List<Department> FindAll()
         {
             return _context.Department.OrderBy(c => c.Name).ToList();
         }
-        
 
     }
 }
