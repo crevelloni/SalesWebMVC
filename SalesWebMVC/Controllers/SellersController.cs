@@ -39,6 +39,12 @@ namespace SalesWebMVC.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(SellerFormViewModel obj)
         {
+            if (!ModelState.IsValid)
+            {
+                var deps = _departmentService.FindAll();
+                var viewModel = new SellerFormViewModel { Seller = obj.Seller, Departments = deps };
+                return View(viewModel);
+            }
             Seller objSeller = obj.Seller;
             _sellerService.Insert(objSeller);
             return RedirectToAction(nameof(Index));
@@ -95,6 +101,10 @@ namespace SalesWebMVC.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, SellerFormViewModel objSellerModelView)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(objSellerModelView);
+            }
             Seller obj = objSellerModelView.Seller;
             if (id != obj.Id)return BadRequest();
 
