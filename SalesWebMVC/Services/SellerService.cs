@@ -2,8 +2,10 @@
 using SalesWebMVC.Data;
 using SalesWebMVC.Models;
 using SalesWebMVC.Services.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace SalesWebMVC.Services
 {
@@ -16,45 +18,53 @@ namespace SalesWebMVC.Services
             _context = context;
         }
 
-        public List<Seller> FindAll()
+        public async Task<List<Seller>> FindAllAsync()
         {
-            return _context.Seller.ToList();
+            return await _context.Seller.ToListAsync();
         }
 
-        public void Insert(Seller objSeller)
+        public async Task InsertAsync(Seller objSeller)
         {
-            _context.Add(objSeller);
-            _context.SaveChanges();
+             _context.Add(objSeller);
+             await _context.SaveChangesAsync();
         }
 
-        public Seller FindById(int id)
+        public async Task<Seller> FindByIdAsync(int id)
         {
             //return (from s in _context.Seller
             //        where s.Id == id 
             //        select s).FirstOrDefault();
-            return _context.Seller
+            return await _context.Seller
                 .Include(obj => obj.Department)
-                .FirstOrDefault(obj => obj.Id == id);
+                .FirstOrDefaultAsync(obj => obj.Id == id);
         }
 
-        public void Remove(int id)
+        public async Task RemoveAsync(int id)
         {
-            var obj = _context.Seller.Find(id);
-            _context.Remove(obj);
-            _context.SaveChanges();
-
+            try
+            {
+                var obj = await _context.Seller.FindAsync(id);
+                _context.Remove(obj);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                throw new IntegrityException(e.Message);
+            }
+           
         }
 
-        public void Update(Seller obj)
+        public async Task UpdateAsync(Seller obj)
         {
-            if (!_context.Seller.Any(c => c.Id == obj.Id))
+            bool hasBool = await _context.Seller.AnyAsync(c => c.Id == obj.Id);
+            if (!hasBool)
             {
                 throw new NotFoundException("Id not found");
             }
             try
             {
                 _context.Update(obj);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException e)
             {
